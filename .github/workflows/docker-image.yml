@@ -30,3 +30,24 @@ jobs:
      
       - name: Push Docker image to ECR
         run: docker push 442222453508.dkr.ecr.ap-south-1.amazonaws.com/python-app-repo:${{ github.sha }}
+
+      - name: Get latest ECR image tag
+        id: ecr-get-latest-tag
+        run: |
+          echo "::set-output name=latest_tag::$(aws ecr describe-images --repository-name node-app-repo --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]' --output text)"
+     
+      - name: Update values.yml file
+        run: |
+          git clone https://github.com/kunal-154/helmchart-repo.git
+          sed -i "s/tag: .*/tag: ${{ steps.ecr-get-latest-tag.outputs.latest_tag }}/" helmchart-repo/node-app/values.yaml
+     
+      - name: Pushes to another repository
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+        with:
+           source-directory: 'helmchart-repo'
+           destination-github-username: 'kunal-154'
+           destination-repository-name: 'helmchart-repo'
+           user-email: kunalgupta154@gmail.com
+           target-branch: main
