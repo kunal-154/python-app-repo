@@ -34,12 +34,12 @@ jobs:
       - name: Get latest ECR image tag
         id: ecr-get-latest-tag
         run: |
-          echo "::set-output name=latest_tag::$(aws ecr describe-images --repository-name node-app-repo --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]' --output text)"
+          echo "::set-output name=latest_tag::$(aws ecr describe-images --repository-name python-app-repo --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]' --output text)"
      
       - name: Update values.yml file
         run: |
           git clone https://github.com/kunal-154/helmchart-repo.git
-          sed -i "s/tag: .*/tag: ${{ steps.ecr-get-latest-tag.outputs.latest_tag }}/" helmchart-repo/node-app/values.yaml
+          sed -i "s/tag: .*/tag: ${{ steps.ecr-get-latest-tag.outputs.latest_tag }}/" helmchart-repo/python-app/values.yaml
      
       - name: Pushes to another repository
         uses: cpina/github-action-push-to-another-repository@main
