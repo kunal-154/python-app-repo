@@ -1,0 +1,32 @@
+name: Build and Push Docker image to ECR
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+
+      - name: Login to ECR 
+        run: aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 442222453508.dkr.ecr.ap-south-1.amazonaws.com
+      
+      - name: Build Docker image
+        run: docker build -t python-app-repo .
+
+      - name: Tag Docker image
+        run: docker tag python-app-repo:latest 442222453508.dkr.ecr.ap-south-1.amazonaws.com/python-app-repo:latest
+
+      - name: Push Docker image to ECR
+        run: docker push 442222453508.dkr.ecr.ap-south-1.amazonaws.com/python-app-repo:latest
